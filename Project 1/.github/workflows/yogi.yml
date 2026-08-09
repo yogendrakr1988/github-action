@@ -13,13 +13,17 @@ jobs:
     name: Terraform Plan
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: 'Project 1/Parent Module'
+
     steps:
 
-      # Checkout Code
+      # Checkout Repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Install Azure CLI
+      # Azure Login
       - name: Azure Login
         env:
           AZURE_USERNAME: ${{ secrets.AZURE_USERNAME }}
