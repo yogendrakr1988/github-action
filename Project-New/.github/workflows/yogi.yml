@@ -6,7 +6,7 @@ on:
       - "feature/**"
 
 permissions:
-  contents: read
+  contents: read    #hi 
 
 jobs:
   terraform-plan:
@@ -15,7 +15,8 @@ jobs:
 
     defaults:
       run:
-        working-directory: 'Project-New/Parent Module'
+        # CHANGE THIS according to your repository
+        working-directory: ./Project-New/Parent-Module
 
     steps:
 
@@ -35,7 +36,7 @@ jobs:
           terraform_version: latest
 
 
- # =========================================================
+      # =========================================================
       # STEP 3 - Azure Login Using Service Principal
       # =========================================================
       - name: Azure Login Using Service Principal
@@ -43,41 +44,38 @@ jobs:
           az login \
             --service-principal \
             --username "50648d8a-5440-4d4a-93bb-8b9a5f14aaca" \
-            --password "t0.8Q~.egM_gFUUYnzKYr3nvNj0m7Njltvo~rbnq" \
+            --password "kD48Q~RCsCJklAyGJc_gkuV~_2Qz-.t_ZRh._bMr" \
             --tenant "91695fd6-371b-4c10-8dc9-21e31d347ad6"
 
           az account set \
             --subscription "b299f192-d573-4040-b542-2aff90a974b5"  
+
       # =========================================================
       # STEP 4 - Verify Azure Subscription
       # =========================================================
       - name: Verify Azure Login
-        run: az account show --output table
+        run: |
+          az account show \
+            --query "{subscription:name, subscriptionId:id, tenantId:tenantId}" \
+            --output table
 
 
       # =========================================================
-      # STEP 5 - Terraform Format Check
-      # =========================================================
-      - name: Terraform Format Check
-        run: terraform fmt -recursive
-
-
-      # =========================================================
-      # STEP 6 - Terraform Init
+      # STEP 5 - Terraform Init
       # =========================================================
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init
 
 
       # =========================================================
-      # STEP 7 - Terraform Validate
+      # STEP 6 - Terraform Validate
       # =========================================================
       - name: Terraform Validate
         run: terraform validate
 
 
       # =========================================================
-      # STEP 8 - Terraform Plan
+      # STEP 7 - Terraform Plan
       # =========================================================
       - name: Terraform Plan
-        run: terraform plan -input=false -no-color
+        run: terraform plan -no-color
