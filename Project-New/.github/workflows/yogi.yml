@@ -16,7 +16,7 @@ jobs:
     defaults:
       run:
         # CHANGE THIS according to your repository
-        working-directory: 'Project-New/Parent Module'
+        working-directory: ./Project-New/Parent-Module
 
     steps:
 
