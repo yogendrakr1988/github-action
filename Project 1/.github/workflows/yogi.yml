@@ -1,11 +1,9 @@
-name: Terraform Plan
+name: Terraform Feature Branch - Plan
 
 on:
   push:
     branches:
-      - 'feature/**'
-
-  workflow_dispatch:
+      - "feature/**"
 
 permissions:
   contents: read
@@ -21,15 +19,25 @@ jobs:
 
     steps:
 
-      # --------------------------------------------------
-      # Checkout Repository
-      # --------------------------------------------------
-      - name: Checkout Code
+      # =========================================================
+      # STEP 1 - Checkout Repository
+      # =========================================================
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # --------------------------------------------------
-      # Azure Login using Service Principal
-      # --------------------------------------------------
+
+      # =========================================================
+      # STEP 2 - Setup Terraform
+      # =========================================================
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+
+      # =========================================================
+      # STEP 3 - Azure Login Using Service Principal
+      # =========================================================
       - name: Azure Login Using Service Principal
         run: |
           az login \
@@ -41,31 +49,37 @@ jobs:
           az account set \
             --subscription "b299f192-d573-4040-b542-2aff90a974b5"
 
-      # --------------------------------------------------
-      # Setup Terraform
-      # --------------------------------------------------
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.15.2
 
-      # --------------------------------------------------
-      # Terraform Init
-      # --------------------------------------------------
+      # =========================================================
+      # STEP 4 - Verify Azure Subscription
+      # =========================================================
+      - name: Verify Azure Login
+        run: az account show --output table
+
+
+      # =========================================================
+      # STEP 5 - Terraform Format Check
+      # =========================================================
+      - name: Terraform Format Check
+        run: terraform fmt -recursive
+
+
+      # =========================================================
+      # STEP 6 - Terraform Init
+      # =========================================================
       - name: Terraform Init
-        run: |
-          terraform init
+        run: terraform init -input=false
 
-      # --------------------------------------------------
-      # Terraform Validate
-      # --------------------------------------------------
+
+      # =========================================================
+      # STEP 7 - Terraform Validate
+      # =========================================================
       - name: Terraform Validate
-        run: |
-          terraform validate
+        run: terraform validate
 
-      # --------------------------------------------------
-      # Terraform Plan
-      # --------------------------------------------------
+
+      # =========================================================
+      # STEP 8 - Terraform Plan
+      # =========================================================
       - name: Terraform Plan
-        run: |
-          terraform plan
+        run: terraform plan -input=false -no-color
