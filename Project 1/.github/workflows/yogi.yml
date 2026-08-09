@@ -21,18 +21,48 @@ jobs:
 
     steps:
 
-      # Checkout Repository
+      # -------------------------------------------------
+      # Checkout
+      # -------------------------------------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Azure Login
+      # -------------------------------------------------
+      # Azure CLI
+      # -------------------------------------------------
       - name: Azure Login
+        shell: bash
         env:
           AZURE_USERNAME: ${{ secrets.AZURE_USERNAME }}
           AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
+          set -e
+
+          echo "Checking Azure credentials..."
+
+          if [ -z "$AZURE_USERNAME" ]; then
+            echo "ERROR: AZURE_USERNAME secret is missing or empty."
+            exit 1
+          fi
+
+          if [ -z "$AZURE_PASSWORD" ]; then
+            echo "ERROR: AZURE_PASSWORD secret is missing or empty."
+            exit 1
+          fi
+
+          if [ -z "$AZURE_SUBSCRIPTION_ID" ]; then
+            echo "ERROR: AZURE_SUBSCRIPTION_ID secret is missing or empty."
+            exit 1
+          fi
+
+          if [ -z "$AZURE_TENANT_ID" ]; then
+            echo "ERROR: AZURE_TENANT_ID secret is missing or empty."
+            exit 1
+          fi
+
+          echo "Credentials are available."
           echo "Logging in to Azure..."
 
           az login \
@@ -41,7 +71,7 @@ jobs:
             --tenant "$AZURE_TENANT_ID" \
             --output none
 
-          echo "Selecting Azure Subscription..."
+          echo "Selecting subscription..."
 
           az account set \
             --subscription "$AZURE_SUBSCRIPTION_ID"
@@ -49,25 +79,31 @@ jobs:
           echo "Azure login successful."
 
           az account show \
+            --query "{Subscription:name, SubscriptionId:id, TenantId:tenantId}" \
             --output table
 
-      # Setup Terraform
+      # -------------------------------------------------
+      # Terraform
+      # -------------------------------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.15.2
 
+      # -------------------------------------------------
       # Terraform Init
+      # -------------------------------------------------
       - name: Terraform Init
-        run: |
-          terraform init
+        run: terraform init
 
+      # -------------------------------------------------
       # Terraform Validate
+      # -------------------------------------------------
       - name: Terraform Validate
-        run: |
-          terraform validate
+        run: terraform validate
 
+      # -------------------------------------------------
       # Terraform Plan
+      # -------------------------------------------------
       - name: Terraform Plan
-        run: |
-          terraform plan
+        run: terraform plan
