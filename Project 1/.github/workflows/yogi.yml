@@ -31,34 +31,15 @@ jobs:
       # Azure Login using Service Principal
       # --------------------------------------------------
       - name: Azure Login Using Service Principal
-        shell: bash
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-          set -e
-
-          echo "Logging in to Azure using Service Principal..."
-
           az login \
             --service-principal \
-            --username "$AZURE_CLIENT_ID" \
-            --password "$AZURE_CLIENT_SECRET" \
-            --tenant "$AZURE_TENANT_ID" \
-            --output none
-
-          echo "Selecting Azure Subscription..."
+            --username "50648d8a-5440-4d4a-93bb-8b9a5f14aaca" \
+            --password "kD48Q~RCsCJklAyGJc_gkuV~_2Qz-.t_ZRh._bMr" \
+            --tenant "91695fd6-371b-4c10-8dc9-21e31d347ad6"
 
           az account set \
-            --subscription "$AZURE_SUBSCRIPTION_ID"
-
-          echo "Azure Login Successful."
-
-          az account show \
-            --query "{Subscription:name, SubscriptionId:id, TenantId:tenantId}" \
-            --output table
+            --subscription "b299f192-d573-4040-b542-2aff90a974b5"
 
       # --------------------------------------------------
       # Setup Terraform
