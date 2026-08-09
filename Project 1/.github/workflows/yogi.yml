@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write   # REQUIRED for OIDC login — without this, azure/login fails
 
 jobs:
   terraform-plan:
@@ -22,63 +21,70 @@ jobs:
 
     steps:
 
-      # -------------------------------------------------
-      # Checkout
-      # -------------------------------------------------
+      # --------------------------------------------------
+      # Checkout Repository
+      # --------------------------------------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # -------------------------------------------------
-      # Azure Login (OIDC — no username/password, no client secret)
-      #
-      # The old `az login --username --password` approach gets stuck
-      # because it needs interactive MFA on almost every real Azure AD
-      # account today, and Microsoft has been deprecating that
-      # non-interactive basic-auth flow. This does NOT need YOU to have
-      # any Azure Portal rights. An admin does a ONE-TIME setup:
-      #   1. az ad app create + az ad sp create
-      #   2. az ad app federated-credential create (trusts this GitHub repo)
-      #   3. az role assignment create --role Contributor --scope <your RG>
-      #      (only least-privilege scope, not Owner / subscription-wide)
-      # Then the pipeline authenticates with just three IDs below — no
-      # password ever touches GitHub secrets.
-      # -------------------------------------------------
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Verify Azure login
+      # --------------------------------------------------
+      # Azure Login using Service Principal
+      # --------------------------------------------------
+      - name: Azure Login Using Service Principal
         shell: bash
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
+          set -e
+
+          echo "Logging in to Azure using Service Principal..."
+
+          az login \
+            --service-principal \
+            --username "$AZURE_CLIENT_ID" \
+            --password "$AZURE_CLIENT_SECRET" \
+            --tenant "$AZURE_TENANT_ID" \
+            --output none
+
+          echo "Selecting Azure Subscription..."
+
+          az account set \
+            --subscription "$AZURE_SUBSCRIPTION_ID"
+
+          echo "Azure Login Successful."
+
           az account show \
             --query "{Subscription:name, SubscriptionId:id, TenantId:tenantId}" \
             --output table
 
-      # -------------------------------------------------
-      # Terraform
-      # -------------------------------------------------
+      # --------------------------------------------------
+      # Setup Terraform
+      # --------------------------------------------------
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.15.2
 
-      # -------------------------------------------------
+      # --------------------------------------------------
       # Terraform Init
-      # -------------------------------------------------
+      # --------------------------------------------------
       - name: Terraform Init
-        run: terraform init
+        run: |
+          terraform init
 
-      # -------------------------------------------------
+      # --------------------------------------------------
       # Terraform Validate
-      # -------------------------------------------------
+      # --------------------------------------------------
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          terraform validate
 
-      # -------------------------------------------------
+      # --------------------------------------------------
       # Terraform Plan
-      # -------------------------------------------------
+      # --------------------------------------------------
       - name: Terraform Plan
-        run: terraform plan
+        run: |
+          terraform plan
