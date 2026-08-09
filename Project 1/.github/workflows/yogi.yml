@@ -75,7 +75,7 @@ jobs:
       # STEP 7 - Terraform Validate
       # =========================================================
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform validate #Hi
 
 
       # =========================================================
