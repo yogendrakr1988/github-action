@@ -35,26 +35,19 @@ jobs:
           terraform_version: latest
 
 
-      # =========================================================
+ # =========================================================
       # STEP 3 - Azure Login Using Service Principal
       # =========================================================
       - name: Azure Login Using Service Principal
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
           az login \
             --service-principal \
-            --username "$AZURE_CLIENT_ID" \
-            --password "$AZURE_CLIENT_SECRET" \
-            --tenant "$AZURE_TENANT_ID"
+            --username "50648d8a-5440-4d4a-93bb-8b9a5f14aaca" \
+            --password "t0.8Q~.egM_gFUUYnzKYr3nvNj0m7Njltvo~rbnq" \
+            --tenant "91695fd6-371b-4c10-8dc9-21e31d347ad6"
 
           az account set \
-            --subscription "$AZURE_SUBSCRIPTION_ID"
-
-
+            --subscription "b299f192-d573-4040-b542-2aff90a974b5"  
       # =========================================================
       # STEP 4 - Verify Azure Subscription
       # =========================================================
