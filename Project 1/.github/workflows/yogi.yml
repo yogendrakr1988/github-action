@@ -21,11 +21,9 @@ jobs:
 
     steps:
 
-      # Checkout Repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Azure Login
       - name: Azure Login
         env:
           AZURE_USERNAME: ${{ secrets.AZURE_USERNAME }}
@@ -41,20 +39,16 @@ jobs:
 
           az account show
 
-      # Setup Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.15.2
 
-      # Terraform Init
       - name: Terraform Init
         run: terraform init
 
-      # Terraform Validate
       - name: Terraform Validate
         run: terraform validate
 
-      # Terraform Plan
       - name: Terraform Plan
         run: terraform plan
