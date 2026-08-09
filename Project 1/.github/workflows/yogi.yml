@@ -1,0 +1,86 @@
+name: Terraform Plan
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform-plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: 'Project 1/Parent Module'
+
+    steps:
+
+      # --------------------------------------------------
+      # Checkout Repository
+      # --------------------------------------------------
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------
+      # Azure Login
+      # --------------------------------------------------
+      - name: Azure Login
+        env:
+          AZURE_USERNAME: ${{ secrets.AZURE_USERNAME }}
+          AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+        run: |
+          echo "Logging in to Azure..."
+
+          az login \
+            --username "$AZURE_USERNAME" \
+            --password "$AZURE_PASSWORD" \
+            --tenant "$AZURE_TENANT_ID" \
+            --allow-no-subscriptions
+
+          echo "Selecting Azure Subscription..."
+
+          az account set \
+            --subscription "$AZURE_SUBSCRIPTION_ID"
+
+          echo "Azure Account Information:"
+
+          az account show \
+            --output table
+
+      # --------------------------------------------------
+      # Install Terraform
+      # --------------------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.2
+
+      # --------------------------------------------------
+      # Terraform Init
+      # --------------------------------------------------
+      - name: Terraform Init
+        run: |
+          terraform init
+
+      # --------------------------------------------------
+      # Terraform Validate
+      # --------------------------------------------------
+      - name: Terraform Validate
+        run: |
+          terraform validate
+
+      # --------------------------------------------------
+      # Terraform Plan
+      # --------------------------------------------------
+      - name: Terraform Plan
+        run: |
+          terraform plan
